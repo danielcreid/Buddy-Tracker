@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuddyDex</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0ede8;
+  --surface: #ffffff;
+  --surface2: #f7f4f0;
+  --border: #e2ddd7;
+  --ink: #1a1714;
+  --muted: #8a837a;
+  --accent: #e8440a;
+  --accent2: #2563eb;
+  --gold: #d97706;
+  --green: #16a34a;
+  --red: #dc2626;
+  --lvl-good: #6b7280;
+  --lvl-great: #2563eb;
+  --lvl-ultra: #9333ea;
+  --lvl-best: #d97706;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  padding-bottom: 48px;
+}
+
+/* TOP BAR */
+.topbar {
+  background: var(--ink);
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+.topbar h1 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  flex: 1;
+}
+.topbar h1 span { color: var(--accent); }
+.btn-add {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity .15s;
+}
+.btn-add:hover { opacity: .85; }
+
+/* CONTROLS */
+.controls {
+  padding: 14px 16px 2px;
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.search-wrap { position: relative; }
+.search-wrap svg {
+  position: absolute; left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted); pointer-events: none;
+}
+#searchInput {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px 10px 36px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+}
+#searchInput:focus { border-color: var(--accent2); }
+
+.filter-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-label { font-size: 11px; color: var(--muted); white-space: nowrap; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.chip {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.chip:hover { border-color: var(--ink); color: var(--ink); }
+.chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.chip.lvl-good.active  { background: var(--lvl-good);  border-color: var(--lvl-good); }
+.chip.lvl-great.active { background: var(--lvl-great); border-color: var(--lvl-great); }
+.chip.lvl-ultra.active { background: var(--lvl-ultra); border-color: var(--lvl-ultra); }
+.chip.lvl-best.active  { background: var(--lvl-best);  border-color: var(--lvl-best); }
+
+.sort-row { display: flex; gap: 8px; align-items: center; }
+.sort-select {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+}
+
+/* LIST */
+.list-wrap {
+  padding: 12px 16px 0;
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.count-badge {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 2px 0;
+}
+
+/* CARD */
+.pokemon-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow .15s;
+  animation: slideUp .22s ease both;
+}
+.pokemon-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+.card-inner { display: flex; }
+.level-bar { width: 5px; flex-shrink: 0; }
+.lvl-good  .level-bar { background: var(--lvl-good); }
+.lvl-great .level-bar { background: var(--lvl-great); }
+.lvl-ultra .level-bar { background: var(--lvl-ultra); }
+.lvl-best  .level-bar { background: var(--lvl-best); }
+.card-body { flex: 1; padding: 13px 14px 11px; min-width: 0; }
+
+/* card top */
+.card-top {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.c-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.c-name-wrap { flex: 1; min-width: 0; }
+.c-name {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+}
+.c-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.level-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 20px; color: #fff; flex-shrink: 0; white-space: nowrap;
+}
+.lvl-good  .level-badge { background: var(--lvl-good); }
+.lvl-great .level-badge { background: var(--lvl-great); }
+.lvl-ultra .level-badge { background: var(--lvl-ultra); }
+.lvl-best  .level-badge { background: var(--lvl-best); }
+.btn-edit {
+  background: none; border: 1.5px solid var(--border); border-radius: 7px;
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted); flex-shrink: 0; transition: border-color .15s, color .15s;
+}
+.btn-edit:hover { border-color: var(--ink); color: var(--ink); }
+
+/* hearts */
+.hearts-row {
+  display: flex; align-items: center; gap: 4px; margin-bottom: 10px;
+}
+.hearts-label { font-size: 10px; color: var(--muted); margin-right: 3px; white-space: nowrap; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+.heart-pip {
+  font-size: 14px; cursor: pointer;
+  filter: grayscale(1) opacity(.2);
+  transition: transform .1s, filter .1s;
+  user-select: none; line-height: 1;
+}
+.heart-pip.on { filter: none; }
+.heart-pip:hover { transform: scale(1.3); }
+.hearts-total { margin-left: auto; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.hearts-total strong { color: var(--ink); }
+
+/* progress bars */
+.prog-rows { display: flex; flex-direction: column; gap: 5px; }
+.prog-row { display: flex; align-items: center; gap: 8px; }
+.prog-icon { font-size: 12px; flex-shrink: 0; width: 16px; text-align: center; }
+.prog-track {
+  flex: 1; height: 7px; background: var(--surface2);
+  border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
+}
+.prog-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .5s cubic-bezier(.34,1.56,.64,1);
+}
+.prog-fill.hearts { background: var(--red); }
+.prog-fill.candy  { background: var(--accent2); }
+.prog-fill.xl     { background: var(--gold); }
+.prog-val { font-size: 10px; font-weight: 600; color: var(--muted); white-space: nowrap; min-width: 58px; text-align: right; }
+
+/* quick tap */
+.quick-tap {
+  display: flex; gap: 6px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.tap-btn {
+  flex: 1; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 7px 4px;
+  font-family: var(--font-body); font-size: 11px; font-weight: 600; color: var(--muted);
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: background .12s, border-color .12s, color .12s, transform .1s;
+  user-select: none;
+}
+.tap-btn .t-icon { font-size: 15px; }
+.tap-btn:hover { background: var(--surface); border-color: var(--ink); color: var(--ink); }
+.tap-btn:active { transform: scale(.94); }
+
+/* empty */
+.empty {
+  text-align: center; padding: 60px 24px; color: var(--muted);
+}
+.empty .e-emoji { font-size: 48px; margin-bottom: 12px; }
+.empty h3 { font-family: var(--font-display); font-size: 18px; color: var(--ink); margin-bottom: 6px; }
+.empty p { font-size: 13px; line-height: 1.6; }
+
+/* MODAL */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,23,20,.55);
+  backdrop-filter: blur(6px);
+  z-index: 100; align-items: flex-end; justify-content: center; padding: 0;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  padding: 22px 20px 36px; width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto;
+  animation: slideUpModal .28s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
+.modal h2 { font-family: var(--font-display); font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px; }
+.field input, .field select {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 11px 13px; font-family: var(--font-body);
+  font-size: 14px; color: var(--ink); outline: none; transition: border-color .15s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent2); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+.btn-primary {
+  flex: 1; background: var(--ink); color: #fff; border: none;
+  border-radius: 10px; padding: 13px; font-family: var(--font-display);
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .85; }
+.btn-secondary {
+  background: var(--surface2); color: var(--muted); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 13px 16px; font-family: var(--font-body);
+  font-size: 14px; cursor: pointer; transition: color .15s;
+}
+.btn-secondary:hover { color: var(--ink); }
+.btn-danger {
+  background: none; color: var(--red); border: 1.5px solid #fca5a5;
+  border-radius: 10px; padding: 13px 14px; font-family: var(--font-body);
+  font-size: 13px; cursor: pointer; transition: background .15s;
+}
+.btn-danger:hover { background: #fef2f2; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: #fff; border-radius: 24px;
+  padding: 10px 20px; font-size: 13px; font-weight: 500;
+  z-index: 200; transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUpModal { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Buddy<span>Dex</span></h1>
+  <button class="btn-add" onclick="openAdd()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Pokémon
+  </button>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search Pokémon…" oninput="renderList()">
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Level</span>
+    <span class="chip active"       data-f="all"         onclick="setFilter('all',this)">All</span>
+    <span class="chip lvl-good"     data-f="Good Buddy"  onclick="setFilter('Good Buddy',this)">Good</span>
+    <span class="chip lvl-great"    data-f="Great Buddy" onclick="setFilter('Great Buddy',this)">Great</span>
+    <span class="chip lvl-ultra"    data-f="Ultra Buddy" onclick="setFilter('Ultra Buddy',this)">Ultra</span>
+    <span class="chip lvl-best"     data-f="Best Buddy"  onclick="setFilter('Best Buddy',this)">Best ★</span>
+  </div>
+  <div class="sort-row">
+    <span class="filter-label">Sort</span>
+    <select class="sort-select" id="sortSelect" onchange="renderList()">
+      <option value="name">Name A–Z</option>
+      <option value="level">Level (Low → High)</option>
+      <option value="level-desc">Level (High → Low)</option>
+      <option value="hearts-desc">Hearts (most first)</option>
+      <option value="progress-desc">Progress % (most first)</option>
+    </select>
+  </div>
+</div>
+
+<div class="list-wrap" id="listWrap"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeOnBg(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modalTitle">Add Pokémon</h2>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="fName" placeholder="e.g. Garchomp" maxlength="30">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Emoji / Icon</label>
+        <input type="text" id="fEmoji" placeholder="🐉" maxlength="4">
+      </div>
+      <div class="field">
+        <label>Buddy Level</label>
+        <select id="fLevel">
+          <option>Good Buddy</option>
+          <option>Great Buddy</option>
+          <option>Ultra Buddy</option>
+          <option>Best Buddy</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Candy distance (km per candy)</label>
+      <select id="fKm">
+        <option value="1">1 km</option>
+        <option value="3" selected>3 km</option>
+        <option value="5">5 km</option>
+        <option value="20">20 km</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Total Hearts (0–300)</label>
+        <input type="number" id="fHearts" min="0" max="300" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Candy earned</label>
+        <input type="number" id="fCandy" min="0" placeholder="0">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>XL Candy (0–296)</label>
+        <input type="number" id="fXL" min="0" max="296" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Today's hearts (0–6)</label>
+        <input type="number" id="fTodayHearts" min="0" max="6" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<script>
+const LEVEL_ORDER = ['Good Buddy','Great Buddy','Ultra Buddy','Best Buddy'];
+// heart thresholds for auto-level
+const LEVEL_THRESHOLDS = { 'Good Buddy': 0, 'Great Buddy': 10, 'Ultra Buddy': 70, 'Best Buddy': 300 };
+const HEART_MAX = 300;
+const XL_MAX = 296;
+
+let pokemon = JSON.parse(localStorage.getItem('buddydex_v2') || '[]');
+let filterLevel = 'all';
+let editingId = null;
+
+function save() { localStorage.setItem('buddydex_v2', JSON.stringify(pokemon)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function checkDailyReset() {
+  const today = new Date().toDateString();
+  pokemon.forEach(p => { if (p.lastDay !== today) { p.todayHearts = 0; p.lastDay = today; } });
+  save();
+}
+
+function autoLevel(p) {
+  let lvl = 'Good Buddy';
+  if (p.hearts >= 300) lvl = 'Best Buddy';
+  else if (p.hearts >= 70) lvl = 'Ultra Buddy';
+  else if (p.hearts >= 10) lvl = 'Great Buddy';
+  p.level = lvl;
+}
+
+function progressPct(p) {
+  const h = Math.min(p.hearts / HEART_MAX, 1) * 60;
+  const c = Math.min(p.candy / 400, 1) * 20;
+  const x = Math.min(p.xl / XL_MAX, 1) * 20;
+  return Math.round(h + c + x);
+}
+
+function levelClass(lvl) { return 'lvl-' + lvl.split(' ')[0].toLowerCase(); }
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── RENDER ──
+function renderList() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+
+  let list = pokemon.filter(p => {
+    const mQ = !q || p.name.toLowerCase().includes(q);
+    const mF = filterLevel === 'all' || p.level === filterLevel;
+    return mQ && mF;
+  });
+
+  list.sort((a, b) => {
+    if (sort === 'name') return a.name.localeCompare(b.name);
+    if (sort === 'level') return LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level);
+    if (sort === 'level-desc') return LEVEL_ORDER.indexOf(b.level) - LEVEL_ORDER.indexOf(a.level);
+    if (sort === 'hearts-desc') return b.hearts - a.hearts;
+    if (sort === 'progress-desc') return progressPct(b) - progressPct(a);
+    return 0;
+  });
+
+  const wrap = document.getElementById('listWrap');
+  if (list.length === 0) {
+    wrap.innerHTML = pokemon.length === 0
+      ? `<div class="empty"><div class="e-emoji">🥚</div><h3>No Pokémon yet</h3><p>Tap "Add Pokémon" to start tracking your buddies toward Best Buddy.</p></div>`
+      : `<div class="empty"><div class="e-emoji">🔍</div><h3>No matches</h3><p>Try a different search or filter.</p></div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<div class="count-badge">${list.length} Pokémon</div>` + list.map((p,i) => cardHTML(p,i)).join('');
+}
+
+function cardHTML(p, i) {
+  const lc = levelClass(p.level);
+  const hPct = (Math.min(p.hearts, HEART_MAX) / HEART_MAX * 100).toFixed(1);
+  const cPct = (Math.min(p.candy, 400) / 400 * 100).toFixed(1);
+  const xPct = (Math.min(p.xl, XL_MAX) / XL_MAX * 100).toFixed(1);
+
+  const pips = Array.from({length:6}, (_,j) =>
+    `<span class="heart-pip ${j < p.todayHearts ? 'on' : ''}" onclick="tapHeart('${p.id}',${j+1})">❤️</span>`
+  ).join('');
+
+  const lvlShort = p.level.replace(' Buddy','');
+  const pct = progressPct(p);
+
+  return `
+<div class="pokemon-card ${lc}" style="animation-delay:${Math.min(i,8)*0.04}s">
+  <div class="card-inner">
+    <div class="level-bar"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="c-avatar">${p.emoji || '❓'}</div>
+        <div class="c-name-wrap">
+          <div class="c-name">${esc(p.name)}</div>
+          <div class="c-sub">${p.km} km/candy &middot; ${pct}% to Best Buddy</div>
+        </div>
+        <span class="level-badge">${lvlShort}</span>
+        <button class="btn-edit" onclick="openEdit('${p.id}')" title="Edit">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+
+      <div class="hearts-row">
+        <span class="hearts-label">Today</span>
+        ${pips}
+        <span class="hearts-total"><strong>${p.hearts}</strong> / ${HEART_MAX} hearts</span>
+      </div>
+
+      <div class="prog-rows">
+        <div class="prog-row">
+          <span class="prog-icon">❤️</span>
+          <div class="prog-track"><div class="prog-fill hearts" style="width:${hPct}%"></div></div>
+          <span class="prog-val">${p.hearts} / ${HEART_MAX}</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-icon">🍬</span>
+          <div class="prog-track"><div class="prog-fill candy" style="width:${cPct}%"></div></div>
+          <span class="prog-val">${p.candy} candy</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-icon">🍭</span>
+          <div class="prog-track"><div class="prog-fill xl" style="width:${xPct}%"></div></div>
+          <span class="prog-val">${p.xl} / ${XL_MAX} XL</span>
+        </div>
+      </div>
+
+      <div class="quick-tap">
+        <button class="tap-btn" onclick="quickTap('${p.id}','heart')"><span class="t-icon">❤️</span>+Heart</button>
+        <button class="tap-btn" onclick="quickTap('${p.id}','candy')"><span class="t-icon">🍬</span>+Candy</button>
+        <button class="tap-btn" onclick="quickTap('${p.id}','xl')"><span class="t-icon">🍭</span>+XL</button>
+        <button class="tap-btn" onclick="quickTap('${p.id}','walk')"><span class="t-icon">🥾</span>Walked</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+// ── INTERACTIONS ──
+function tapHeart(id, n) {
+  const p = pokemon.find(x => x.id === id);
+  if (!p) return;
+  p.todayHearts = p.todayHearts === n ? n - 1 : n;
+  save(); renderList();
+}
+
+function quickTap(id, type) {
+  const p = pokemon.find(x => x.id === id);
+  if (!p) return;
+  let msg = '';
+  if (type === 'heart') {
+    if (p.hearts < HEART_MAX) {
+      p.hearts++; p.todayHearts = Math.min(p.todayHearts + 1, 6);
+      autoLevel(p); msg = '❤️ Heart added';
+    } else { msg = '❤️ Already at max!'; }
+  } else if (type === 'candy') {
+    p.candy++; msg = '🍬 Candy +1';
+  } else if (type === 'xl') {
+    if (p.xl < XL_MAX) { p.xl++; msg = '🍭 XL Candy +1'; }
+    else { msg = '🍭 XL already maxed!'; }
+  } else if (type === 'walk') {
+    msg = '🥾 Walk logged';
+  }
+  save(); renderList(); showToast(msg);
+}
+
+function setFilter(val, el) {
+  filterLevel = val;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+// ── MODAL ──
+function openAdd() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add Pokémon';
+  ['fName','fEmoji','fHearts','fCandy','fXL','fTodayHearts'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fLevel').value = 'Good Buddy';
+  document.getElementById('fKm').value = '3';
+  document.getElementById('modalActions').innerHTML = `
+    <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    <button class="btn-primary" onclick="saveModal()">Add</button>`;
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(() => document.getElementById('fName').focus(), 300);
+}
+
+function openEdit(id) {
+  const p = pokemon.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit ' + p.name;
+  document.getElementById('fName').value = p.name;
+  document.getElementById('fEmoji').value = p.emoji;
+  document.getElementById('fLevel').value = p.level;
+  document.getElementById('fKm').value = p.km;
+  document.getElementById('fHearts').value = p.hearts;
+  document.getElementById('fCandy').value = p.candy;
+  document.getElementById('fXL').value = p.xl;
+  document.getElementById('fTodayHearts').value = p.todayHearts;
+  document.getElementById('modalActions').innerHTML = `
+    <button class="btn-danger" onclick="deletePokemon('${id}')">Remove</button>
+    <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    <button class="btn-primary" onclick="saveModal()">Save</button>`;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function saveModal() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { document.getElementById('fName').focus(); return; }
+  const hearts = Math.min(Math.max(parseInt(document.getElementById('fHearts').value) || 0, 0), HEART_MAX);
+  const data = {
+    name, emoji: document.getElementById('fEmoji').value.trim() || '❓',
+    level: document.getElementById('fLevel').value,
+    km: parseInt(document.getElementById('fKm').value),
+    hearts,
+    candy: Math.max(parseInt(document.getElementById('fCandy').value) || 0, 0),
+    xl: Math.min(Math.max(parseInt(document.getElementById('fXL').value) || 0, 0), XL_MAX),
+    todayHearts: Math.min(Math.max(parseInt(document.getElementById('fTodayHearts').value) || 0, 0), 6),
+    lastDay: new Date().toDateString()
+  };
+  // auto-set level from hearts
+  if (data.hearts >= 300) data.level = 'Best Buddy';
+  else if (data.hearts >= 70) data.level = 'Ultra Buddy';
+  else if (data.hearts >= 10) data.level = 'Great Buddy';
+  else data.level = 'Good Buddy';
+
+  if (editingId) {
+    const idx = pokemon.findIndex(x => x.id === editingId);
+    if (idx !== -1) pokemon[idx] = { ...pokemon[idx], ...data };
+    showToast('✅ ' + name + ' updated');
+  } else {
+    pokemon.push({ id: uid(), ...data });
+    showToast('✅ ' + name + ' added!');
+  }
+  save(); closeModal(); renderList();
+}
+
+function deletePokemon(id) {
+  const p = pokemon.find(x => x.id === id);
+  if (!p || !confirm('Remove ' + p.name + ' from tracker?')) return;
+  pokemon = pokemon.filter(x => x.id !== id);
+  save(); closeModal(); renderList();
+  showToast('🗑️ ' + p.name + ' removed');
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function closeOnBg(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+checkDailyReset();
+renderList();
+</script>
+</body>
+</html>
