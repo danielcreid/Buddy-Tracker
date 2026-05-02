@@ -796,7 +796,7 @@ async function handleGoogleLogin() {
   if (!sb) return showAuthError('App not configured yet — see setup guide.');
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.href }
+    options: { redirectTo: 'https://danielcreid.com/Buddy-Tracker' }
   });
   if (error) showAuthError(error.message);
 }
