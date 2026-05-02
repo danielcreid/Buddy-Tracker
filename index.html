@@ -709,8 +709,6 @@ const CONFIGURED = !SUPABASE_URL.includes('YOUR_');
 const sb = CONFIGURED
   ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
   : null;
-  
-if (sb) sb.auth.getSession();
 
 if (CONFIGURED) document.getElementById('configBanner').classList.remove('show');
 
