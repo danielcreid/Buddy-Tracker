@@ -1,1 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuddyDex</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #f0ede8;
+  --surface: #ffffff;
+  --surface2: #f7f4f0;
+  --border: #e2ddd7;
+  --ink: #1a1714;
+  --muted: #8a837a;
+  --accent: #e8440a;
+  --accent2: #2563eb;
+  --gold: #d97706;
+  --red: #dc2626;
+  --green: #16a34a;
+  --lvl-good: #6b7280;
+  --lvl-great: #2563eb;
+  --lvl-ultra: #9333ea;
+  --lvl-best: #d97706;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
 
+/* ── AUTH SCREEN ── */
+#authScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--ink);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,68,10,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(37,99,235,0.15) 0%, transparent 50%);
+}
+.auth-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 36px 28px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+}
+.auth-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.auth-logo h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.auth-logo h1 span { color: var(--accent); }
+.auth-logo p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.auth-tab.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+
+.auth-field { margin-bottom: 12px; }
+.auth-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 5px;
+}
+.auth-field input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+}
+.auth-field input:focus { border-color: var(--accent2); }
+
+.btn-auth-primary {
+  width: 100%;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity .15s;
+}
+.btn-auth-primary:hover { opacity: .85; }
+.btn-auth-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.btn-google {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: border-color .15s, background .15s;
+}
+.btn-google:hover { background: var(--surface2); border-color: #aaa; }
+.btn-google svg { flex-shrink: 0; }
+
+.auth-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--red);
+  margin-top: 12px;
+  display: none;
+}
+.auth-error.show { display: block; }
+
+.auth-success {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--green);
+  margin-top: 12px;
+  display: none;
+}
+.auth-success.show { display: block; }
+
+/* ── CONFIG BANNER ── */
+#configBanner {
+  background: #fef3c7;
+  border-bottom: 1px solid #fcd34d;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #92400e;
+  text-align: center;
+  display: none;
+}
+#configBanner.show { display: block; }
+#configBanner code {
+  background: rgba(0,0,0,.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* ── APP ── */
+#appScreen { display: none; padding-bottom: 48px; }
+
+.topbar {
+  background: var(--ink);
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+.topbar h1 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  flex: 1;
+}
+.topbar h1 span { color: var(--accent); }
+.topbar-right { display: flex; gap: 8px; align-items: center; }
+
+.sync-indicator {
+  font-size: 11px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #555;
+  transition: background .3s;
+  flex-shrink: 0;
+}
+.sync-dot.syncing { background: var(--gold); animation: pulse .8s infinite; }
+.sync-dot.synced  { background: var(--green); }
+.sync-dot.error   { background: var(--red); }
+
+.btn-add {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 13px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.btn-add:hover { opacity: .85; }
+
+.btn-icon {
+  background: none;
+  border: 1.5px solid #444;
+  border-radius: 8px;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #aaa;
+  transition: border-color .15s, color .15s;
+  flex-shrink: 0;
+}
+.btn-icon:hover { border-color: #888; color: #fff; }
+
+/* CONTROLS */
+.controls {
+  padding: 14px 16px 2px;
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.search-wrap { position: relative; }
+.search-wrap svg {
+  position: absolute; left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted); pointer-events: none;
+}
+#searchInput {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px 10px 36px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+}
+#searchInput:focus { border-color: var(--accent2); }
+
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.filter-label {
+  font-size: 11px; color: var(--muted); white-space: nowrap;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+}
+.chip {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px;
+  font-weight: 600; color: var(--muted); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.chip:hover { border-color: var(--ink); color: var(--ink); }
+.chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.chip.lvl-good.active  { background: var(--lvl-good);  border-color: var(--lvl-good); }
+.chip.lvl-great.active { background: var(--lvl-great); border-color: var(--lvl-great); }
+.chip.lvl-ultra.active { background: var(--lvl-ultra); border-color: var(--lvl-ultra); }
+.chip.lvl-best.active  { background: var(--lvl-best);  border-color: var(--lvl-best); }
+
+.sort-row { display: flex; gap: 8px; align-items: center; }
+.sort-select {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-family: var(--font-body);
+  font-size: 12px; font-weight: 600; color: var(--ink); cursor: pointer; outline: none;
+}
+
+/* LIST */
+.list-wrap {
+  padding: 12px 16px 0;
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.count-badge { font-size: 12px; color: var(--muted); padding: 2px 0; }
+
+/* CARD */
+.pokemon-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  transition: box-shadow .15s; animation: slideUp .22s ease both;
+}
+.pokemon-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+.card-inner { display: flex; }
+.level-bar { width: 5px; flex-shrink: 0; }
+.lvl-good  .level-bar { background: var(--lvl-good); }
+.lvl-great .level-bar { background: var(--lvl-great); }
+.lvl-ultra .level-bar { background: var(--lvl-ultra); }
+.lvl-best  .level-bar { background: var(--lvl-best); }
+.card-body { flex: 1; padding: 13px 14px 11px; min-width: 0; }
+
+.card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.c-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.c-name-wrap { flex: 1; min-width: 0; }
+.c-name {
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+}
+.c-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.level-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 20px; color: #fff; flex-shrink: 0; white-space: nowrap;
+}
+.lvl-good  .level-badge { background: var(--lvl-good); }
+.lvl-great .level-badge { background: var(--lvl-great); }
+.lvl-ultra .level-badge { background: var(--lvl-ultra); }
+.lvl-best  .level-badge { background: var(--lvl-best); }
+.btn-edit {
+  background: none; border: 1.5px solid var(--border); border-radius: 7px;
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted); flex-shrink: 0; transition: border-color .15s, color .15s;
+}
+.btn-edit:hover { border-color: var(--ink); color: var(--ink); }
+
+.hearts-row { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+.hearts-label {
+  font-size: 10px; color: var(--muted); margin-right: 3px; white-space: nowrap;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
+}
+.heart-pip {
+  font-size: 14px; cursor: pointer;
+  filter: grayscale(1) opacity(.2);
+  transition: transform .1s, filter .1s; user-select: none; line-height: 1;
+}
+.heart-pip.on { filter: none; }
+.heart-pip:hover { transform: scale(1.3); }
+.hearts-total { margin-left: auto; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.hearts-total strong { color: var(--ink); }
+
+.prog-rows { display: flex; flex-direction: column; gap: 5px; }
+.prog-row { display: flex; align-items: center; gap: 8px; }
+.prog-icon { font-size: 12px; flex-shrink: 0; width: 16px; text-align: center; }
+.prog-track {
+  flex: 1; height: 7px; background: var(--surface2);
+  border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
+}
+.prog-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .5s cubic-bezier(.34,1.56,.64,1);
+}
+.prog-fill.hearts { background: var(--red); }
+.prog-fill.candy  { background: var(--accent2); }
+.prog-fill.xl     { background: var(--gold); }
+.prog-val { font-size: 10px; font-weight: 600; color: var(--muted); white-space: nowrap; min-width: 58px; text-align: right; }
+
+.quick-tap {
+  display: flex; gap: 6px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.tap-btn {
+  flex: 1; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 7px 4px; font-family: var(--font-body);
+  font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: background .12s, border-color .12s, color .12s, transform .1s; user-select: none;
+}
+.tap-btn .t-icon { font-size: 15px; }
+.tap-btn:hover { background: var(--surface); border-color: var(--ink); color: var(--ink); }
+.tap-btn:active { transform: scale(.94); }
+
+/* EMPTY */
+.empty { text-align: center; padding: 60px 24px; color: var(--muted); }
+.empty .e-emoji { font-size: 48px; margin-bottom: 12px; }
+.empty h3 { font-family: var(--font-display); font-size: 18px; color: var(--ink); margin-bottom: 6px; }
+.empty p { font-size: 13px; line-height: 1.6; }
+
+/* MODAL */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,23,20,.55); backdrop-filter: blur(6px);
+  z-index: 100; align-items: flex-end; justify-content: center;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  padding: 22px 20px 36px; width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto;
+  animation: slideUpModal .28s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
+.modal h2 { font-family: var(--font-display); font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+.field { margin-bottom: 13px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 600; color: var(--muted);
+  margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px;
+}
+.field input, .field select {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 11px 13px; font-family: var(--font-body);
+  font-size: 14px; color: var(--ink); outline: none; transition: border-color .15s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent2); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+.btn-primary {
+  flex: 1; background: var(--ink); color: #fff; border: none;
+  border-radius: 10px; padding: 13px; font-family: var(--font-display);
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .85; }
+.btn-secondary {
+  background: var(--surface2); color: var(--muted); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 13px 16px; font-family: var(--font-body);
+  font-size: 14px; cursor: pointer; transition: color .15s;
+}
+.btn-secondary:hover { color: var(--ink); }
+.btn-danger {
+  background: none; color: var(--red); border: 1.5px solid #fca5a5;
+  border-radius: 10px; padding: 13px 14px; font-family: var(--font-body);
+  font-size: 13px; cursor: pointer; transition: background .15s;
+}
+.btn-danger:hover { background: #fef2f2; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: #fff; border-radius: 24px;
+  padding: 10px 20px; font-size: 13px; font-weight: 500;
+  z-index: 200; transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ACCOUNT MODAL */
+.account-info { margin-bottom: 20px; }
+.account-info .a-email {
+  font-size: 14px; color: var(--ink); font-weight: 600; margin-bottom: 4px;
+}
+.account-info .a-sub { font-size: 12px; color: var(--muted); }
+.btn-signout {
+  width: 100%; background: none; color: var(--red);
+  border: 1.5px solid #fca5a5; border-radius: 10px; padding: 13px;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.btn-signout:hover { background: #fef2f2; }
+
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUpModal { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+</style>
+</head>
+<body>
+
+<!-- ── CONFIG BANNER (shown if placeholders not replaced) ── -->
+<div id="configBanner" class="show">
+  ⚠️ Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> in the script below to connect to your database.
+</div>
+
+<!-- ── AUTH SCREEN ── -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <h1>Buddy<span>Dex</span></h1>
+      <p>Track your Pokémon GO buddy progress</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="loginForm">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-auth-primary" id="btnLogin" onclick="handleLogin()">Sign In</button>
+    </div>
+
+    <div id="registerForm" style="display:none">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <button class="btn-auth-primary" id="btnRegister" onclick="handleRegister()">Create Account</button>
+    </div>
+
+    <div class="auth-divider">or</div>
+
+    <button class="btn-google" onclick="handleGoogleLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
+  </div>
+</div>
+
+<!-- ── APP SCREEN ── -->
+<div id="appScreen">
+  <div class="topbar">
+    <h1>Buddy<span>Dex</span></h1>
+    <div class="topbar-right">
+      <div class="sync-indicator">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncLabel"></span>
+      </div>
+      <button class="btn-add" onclick="openAdd()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </button>
+      <button class="btn-icon" onclick="openAccount()" title="Account">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search Pokémon…" oninput="renderList()"
