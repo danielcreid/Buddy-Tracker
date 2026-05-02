@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BuddyDex</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #f0ede8;
@@ -16,8 +17,8 @@
   --accent: #e8440a;
   --accent2: #2563eb;
   --gold: #d97706;
-  --green: #16a34a;
   --red: #dc2626;
+  --green: #16a34a;
   --lvl-good: #6b7280;
   --lvl-great: #2563eb;
   --lvl-ultra: #9333ea;
@@ -31,14 +32,194 @@ body {
   color: var(--ink);
   font-family: var(--font-body);
   min-height: 100vh;
-  padding-bottom: 48px;
 }
 
-/* TOP BAR */
+/* ── AUTH SCREEN ── */
+#authScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--ink);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232,68,10,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(37,99,235,0.15) 0%, transparent 50%);
+}
+.auth-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 36px 28px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+}
+.auth-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.auth-logo h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.auth-logo h1 span { color: var(--accent); }
+.auth-logo p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.auth-tab.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+
+.auth-field { margin-bottom: 12px; }
+.auth-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 5px;
+}
+.auth-field input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+}
+.auth-field input:focus { border-color: var(--accent2); }
+
+.btn-auth-primary {
+  width: 100%;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity .15s;
+}
+.btn-auth-primary:hover { opacity: .85; }
+.btn-auth-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+.btn-google {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: border-color .15s, background .15s;
+}
+.btn-google:hover { background: var(--surface2); border-color: #aaa; }
+.btn-google svg { flex-shrink: 0; }
+
+.auth-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--red);
+  margin-top: 12px;
+  display: none;
+}
+.auth-error.show { display: block; }
+
+.auth-success {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--green);
+  margin-top: 12px;
+  display: none;
+}
+.auth-success.show { display: block; }
+
+/* ── CONFIG BANNER ── */
+#configBanner {
+  background: #fef3c7;
+  border-bottom: 1px solid #fcd34d;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #92400e;
+  text-align: center;
+  display: none;
+}
+#configBanner.show { display: block; }
+#configBanner code {
+  background: rgba(0,0,0,.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* ── APP ── */
+#appScreen { display: none; padding-bottom: 48px; }
+
 .topbar {
   background: var(--ink);
   color: #fff;
-  padding: 16px 20px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -55,12 +236,33 @@ body {
   flex: 1;
 }
 .topbar h1 span { color: var(--accent); }
+.topbar-right { display: flex; gap: 8px; align-items: center; }
+
+.sync-indicator {
+  font-size: 11px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #555;
+  transition: background .3s;
+  flex-shrink: 0;
+}
+.sync-dot.syncing { background: var(--gold); animation: pulse .8s infinite; }
+.sync-dot.synced  { background: var(--green); }
+.sync-dot.error   { background: var(--red); }
+
 .btn-add {
   background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 8px 14px;
+  padding: 8px 13px;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
@@ -69,8 +271,22 @@ body {
   align-items: center;
   gap: 5px;
   transition: opacity .15s;
+  flex-shrink: 0;
 }
 .btn-add:hover { opacity: .85; }
+
+.btn-icon {
+  background: none;
+  border: 1.5px solid #444;
+  border-radius: 8px;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #aaa;
+  transition: border-color .15s, color .15s;
+  flex-shrink: 0;
+}
+.btn-icon:hover { border-color: #888; color: #fff; }
 
 /* CONTROLS */
 .controls {
@@ -101,24 +317,16 @@ body {
 }
 #searchInput:focus { border-color: var(--accent2); }
 
-.filter-row {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  align-items: center;
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.filter-label {
+  font-size: 11px; color: var(--muted); white-space: nowrap;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
 }
-.filter-label { font-size: 11px; color: var(--muted); white-space: nowrap; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
 .chip {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px;
+  font-weight: 600; color: var(--muted); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
 }
 .chip:hover { border-color: var(--ink); color: var(--ink); }
 .chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
@@ -129,16 +337,9 @@ body {
 
 .sort-row { display: flex; gap: 8px; align-items: center; }
 .sort-select {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink);
-  cursor: pointer;
-  outline: none;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-family: var(--font-body);
+  font-size: 12px; font-weight: 600; color: var(--ink); cursor: pointer; outline: none;
 }
 
 /* LIST */
@@ -150,20 +351,13 @@ body {
   flex-direction: column;
   gap: 10px;
 }
-.count-badge {
-  font-size: 12px;
-  color: var(--muted);
-  padding: 2px 0;
-}
+.count-badge { font-size: 12px; color: var(--muted); padding: 2px 0; }
 
 /* CARD */
 .pokemon-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-  transition: box-shadow .15s;
-  animation: slideUp .22s ease both;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  transition: box-shadow .15s; animation: slideUp .22s ease both;
 }
 .pokemon-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
 .card-inner { display: flex; }
@@ -174,10 +368,7 @@ body {
 .lvl-best  .level-bar { background: var(--lvl-best); }
 .card-body { flex: 1; padding: 13px 14px 11px; min-width: 0; }
 
-/* card top */
-.card-top {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-}
+.card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .c-avatar {
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--surface2); border: 1.5px solid var(--border);
@@ -186,8 +377,7 @@ body {
 }
 .c-name-wrap { flex: 1; min-width: 0; }
 .c-name {
-  font-family: var(--font-display);
-  font-size: 15px; font-weight: 700;
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
 }
 .c-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
@@ -206,23 +396,21 @@ body {
 }
 .btn-edit:hover { border-color: var(--ink); color: var(--ink); }
 
-/* hearts */
-.hearts-row {
-  display: flex; align-items: center; gap: 4px; margin-bottom: 10px;
+.hearts-row { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+.hearts-label {
+  font-size: 10px; color: var(--muted); margin-right: 3px; white-space: nowrap;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
 }
-.hearts-label { font-size: 10px; color: var(--muted); margin-right: 3px; white-space: nowrap; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
 .heart-pip {
   font-size: 14px; cursor: pointer;
   filter: grayscale(1) opacity(.2);
-  transition: transform .1s, filter .1s;
-  user-select: none; line-height: 1;
+  transition: transform .1s, filter .1s; user-select: none; line-height: 1;
 }
 .heart-pip.on { filter: none; }
 .heart-pip:hover { transform: scale(1.3); }
 .hearts-total { margin-left: auto; font-size: 11px; color: var(--muted); white-space: nowrap; }
 .hearts-total strong { color: var(--ink); }
 
-/* progress bars */
 .prog-rows { display: flex; flex-direction: column; gap: 5px; }
 .prog-row { display: flex; align-items: center; gap: 8px; }
 .prog-icon { font-size: 12px; flex-shrink: 0; width: 16px; text-align: center; }
@@ -239,27 +427,23 @@ body {
 .prog-fill.xl     { background: var(--gold); }
 .prog-val { font-size: 10px; font-weight: 600; color: var(--muted); white-space: nowrap; min-width: 58px; text-align: right; }
 
-/* quick tap */
 .quick-tap {
   display: flex; gap: 6px; margin-top: 10px;
   padding-top: 10px; border-top: 1px solid var(--border);
 }
 .tap-btn {
   flex: 1; background: var(--surface2); border: 1.5px solid var(--border);
-  border-radius: 8px; padding: 7px 4px;
-  font-family: var(--font-body); font-size: 11px; font-weight: 600; color: var(--muted);
-  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  transition: background .12s, border-color .12s, color .12s, transform .1s;
-  user-select: none;
+  border-radius: 8px; padding: 7px 4px; font-family: var(--font-body);
+  font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: background .12s, border-color .12s, color .12s, transform .1s; user-select: none;
 }
 .tap-btn .t-icon { font-size: 15px; }
 .tap-btn:hover { background: var(--surface); border-color: var(--ink); color: var(--ink); }
 .tap-btn:active { transform: scale(.94); }
 
-/* empty */
-.empty {
-  text-align: center; padding: 60px 24px; color: var(--muted);
-}
+/* EMPTY */
+.empty { text-align: center; padding: 60px 24px; color: var(--muted); }
 .empty .e-emoji { font-size: 48px; margin-bottom: 12px; }
 .empty h3 { font-family: var(--font-display); font-size: 18px; color: var(--ink); margin-bottom: 6px; }
 .empty p { font-size: 13px; line-height: 1.6; }
@@ -267,9 +451,8 @@ body {
 /* MODAL */
 .overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(26,23,20,.55);
-  backdrop-filter: blur(6px);
-  z-index: 100; align-items: flex-end; justify-content: center; padding: 0;
+  background: rgba(26,23,20,.55); backdrop-filter: blur(6px);
+  z-index: 100; align-items: flex-end; justify-content: center;
 }
 .overlay.open { display: flex; }
 .modal {
@@ -281,7 +464,10 @@ body {
 .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
 .modal h2 { font-family: var(--font-display); font-size: 18px; font-weight: 800; margin-bottom: 18px; }
 .field { margin-bottom: 13px; }
-.field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 600; color: var(--muted);
+  margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px;
+}
 .field input, .field select {
   width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
   border-radius: 10px; padding: 11px 13px; font-family: var(--font-body);
@@ -320,49 +506,134 @@ body {
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
+/* ACCOUNT MODAL */
+.account-info { margin-bottom: 20px; }
+.account-info .a-email {
+  font-size: 14px; color: var(--ink); font-weight: 600; margin-bottom: 4px;
+}
+.account-info .a-sub { font-size: 12px; color: var(--muted); }
+.btn-signout {
+  width: 100%; background: none; color: var(--red);
+  border: 1.5px solid #fca5a5; border-radius: 10px; padding: 13px;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.btn-signout:hover { background: #fef2f2; }
+
 @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 @keyframes slideUpModal { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <h1>Buddy<span>Dex</span></h1>
-  <button class="btn-add" onclick="openAdd()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Add Pokémon
-  </button>
+<!-- ── CONFIG BANNER (shown if placeholders not replaced) ── -->
+<div id="configBanner" class="show">
+  ⚠️ Replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code> in the script below to connect to your database.
 </div>
 
-<div class="controls">
-  <div class="search-wrap">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" id="searchInput" placeholder="Search Pokémon…" oninput="renderList()">
-  </div>
-  <div class="filter-row">
-    <span class="filter-label">Level</span>
-    <span class="chip active"       data-f="all"         onclick="setFilter('all',this)">All</span>
-    <span class="chip lvl-good"     data-f="Good Buddy"  onclick="setFilter('Good Buddy',this)">Good</span>
-    <span class="chip lvl-great"    data-f="Great Buddy" onclick="setFilter('Great Buddy',this)">Great</span>
-    <span class="chip lvl-ultra"    data-f="Ultra Buddy" onclick="setFilter('Ultra Buddy',this)">Ultra</span>
-    <span class="chip lvl-best"     data-f="Best Buddy"  onclick="setFilter('Best Buddy',this)">Best ★</span>
-  </div>
-  <div class="sort-row">
-    <span class="filter-label">Sort</span>
-    <select class="sort-select" id="sortSelect" onchange="renderList()">
-      <option value="name">Name A–Z</option>
-      <option value="level">Level (Low → High)</option>
-      <option value="level-desc">Level (High → Low)</option>
-      <option value="hearts-desc">Hearts (most first)</option>
-      <option value="progress-desc">Progress % (most first)</option>
-    </select>
+<!-- ── AUTH SCREEN ── -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <h1>Buddy<span>Dex</span></h1>
+      <p>Track your Pokémon GO buddy progress</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="loginForm">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-auth-primary" id="btnLogin" onclick="handleLogin()">Sign In</button>
+    </div>
+
+    <div id="registerForm" style="display:none">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <button class="btn-auth-primary" id="btnRegister" onclick="handleRegister()">Create Account</button>
+    </div>
+
+    <div class="auth-divider">or</div>
+
+    <button class="btn-google" onclick="handleGoogleLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
   </div>
 </div>
 
-<div class="list-wrap" id="listWrap"></div>
-<div class="toast" id="toast"></div>
+<!-- ── APP SCREEN ── -->
+<div id="appScreen">
+  <div class="topbar">
+    <h1>Buddy<span>Dex</span></h1>
+    <div class="topbar-right">
+      <div class="sync-indicator">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncLabel"></span>
+      </div>
+      <button class="btn-add" onclick="openAdd()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </button>
+      <button class="btn-icon" onclick="openAccount()" title="Account">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </button>
+    </div>
+  </div>
 
-<!-- Modal -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search Pokémon…" oninput="renderList()">
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Level</span>
+      <span class="chip active"    onclick="setFilter('all',this)">All</span>
+      <span class="chip lvl-good"  onclick="setFilter('Good Buddy',this)">Good</span>
+      <span class="chip lvl-great" onclick="setFilter('Great Buddy',this)">Great</span>
+      <span class="chip lvl-ultra" onclick="setFilter('Ultra Buddy',this)">Ultra</span>
+      <span class="chip lvl-best"  onclick="setFilter('Best Buddy',this)">Best ★</span>
+    </div>
+    <div class="sort-row">
+      <span class="filter-label">Sort</span>
+      <select class="sort-select" id="sortSelect" onchange="renderList()">
+        <option value="name">Name A–Z</option>
+        <option value="level">Level (Low → High)</option>
+        <option value="level-desc">Level (High → Low)</option>
+        <option value="hearts-desc">Hearts (most first)</option>
+        <option value="progress-desc">Progress % (most first)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="list-wrap" id="listWrap"></div>
+</div>
+
+<!-- Pokémon Edit Modal -->
 <div class="overlay" id="overlay" onclick="closeOnBg(event)">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -377,23 +648,14 @@ body {
         <input type="text" id="fEmoji" placeholder="🐉" maxlength="4">
       </div>
       <div class="field">
-        <label>Buddy Level</label>
-        <select id="fLevel">
-          <option>Good Buddy</option>
-          <option>Great Buddy</option>
-          <option>Ultra Buddy</option>
-          <option>Best Buddy</option>
+        <label>Candy distance</label>
+        <select id="fKm">
+          <option value="1">1 km</option>
+          <option value="3" selected>3 km</option>
+          <option value="5">5 km</option>
+          <option value="20">20 km</option>
         </select>
       </div>
-    </div>
-    <div class="field">
-      <label>Candy distance (km per candy)</label>
-      <select id="fKm">
-        <option value="1">1 km</option>
-        <option value="3" selected>3 km</option>
-        <option value="5">5 km</option>
-        <option value="20">20 km</option>
-      </select>
     </div>
     <div class="field-row">
       <div class="field">
@@ -419,48 +681,245 @@ body {
   </div>
 </div>
 
+<!-- Account Modal -->
+<div class="overlay" id="accountOverlay" onclick="closeAccountOnBg(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Account</h2>
+    <div class="account-info">
+      <div class="a-email" id="accountEmail"></div>
+      <div class="a-sub">Signed in · data synced to Supabase</div>
+    </div>
+    <button class="btn-signout" onclick="handleSignOut()">Sign Out</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
+// ─────────────────────────────────────────
+// CONFIGURATION — replace these two values
+// ─────────────────────────────────────────
+const SUPABASE_URL  = 'https://mllswtsebwemheteogrm.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_8ezjlqqFYXauS0fMyt4jeQ_6L7f-3gA';
+// ─────────────────────────────────────────
+
+const CONFIGURED = !SUPABASE_URL.includes('YOUR_');
+
+const sb = CONFIGURED
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+  : null;
+
+if (CONFIGURED) document.getElementById('configBanner').classList.remove('show');
+
+// ── CONSTANTS ──
 const LEVEL_ORDER = ['Good Buddy','Great Buddy','Ultra Buddy','Best Buddy'];
-// heart thresholds for auto-level
-const LEVEL_THRESHOLDS = { 'Good Buddy': 0, 'Great Buddy': 10, 'Ultra Buddy': 70, 'Best Buddy': 300 };
 const HEART_MAX = 300;
-const XL_MAX = 296;
+const XL_MAX    = 296;
 
-let pokemon = JSON.parse(localStorage.getItem('buddydex_v2') || '[]');
+let pokemon     = [];
 let filterLevel = 'all';
-let editingId = null;
+let editingId   = null;
+let currentUser = null;
+let syncTimeout = null;
 
-function save() { localStorage.setItem('buddydex_v2', JSON.stringify(pokemon)); }
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+// ── AUTH STATE ──
+if (sb) {
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+      currentUser = session.user;
+      await loadFromDB();
+      showApp();
+    } else {
+      currentUser = null;
+      pokemon = [];
+      showAuth();
+    }
+  });
+} else {
+  // No config — show auth screen with a disabled state
+  showAuth();
+}
 
+// ── AUTH UI ──
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) =>
+    t.classList.toggle('active', (i===0) === (tab==='login'))
+  );
+  document.getElementById('loginForm').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+  clearAuthMessages();
+}
+
+function clearAuthMessages() {
+  document.getElementById('authError').classList.remove('show');
+  document.getElementById('authSuccess').classList.remove('show');
+}
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg; el.classList.add('show');
+  document.getElementById('authSuccess').classList.remove('show');
+}
+function showAuthSuccess(msg) {
+  const el = document.getElementById('authSuccess');
+  el.textContent = msg; el.classList.add('show');
+  document.getElementById('authError').classList.remove('show');
+}
+
+async function handleLogin() {
+  if (!sb) return showAuthError('App not configured yet — see setup guide.');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  if (!email || !pass) return showAuthError('Please enter your email and password.');
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Sign In';
+  if (error) showAuthError(error.message);
+}
+
+async function handleRegister() {
+  if (!sb) return showAuthError('App not configured yet — see setup guide.');
+  const email = document.getElementById('regEmail').value.trim();
+  const pass  = document.getElementById('regPassword').value;
+  if (!email || !pass) return showAuthError('Please enter your email and password.');
+  if (pass.length < 6) return showAuthError('Password must be at least 6 characters.');
+  const btn = document.getElementById('btnRegister');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  const { error } = await sb.auth.signUp({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Create Account';
+  if (error) showAuthError(error.message);
+  else showAuthSuccess('Account created! Check your email to confirm, then sign in.');
+}
+
+async function handleGoogleLogin() {
+  if (!sb) return showAuthError('App not configured yet — see setup guide.');
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) showAuthError(error.message);
+}
+
+async function handleSignOut() {
+  await sb.auth.signOut();
+  closeAccountModal();
+}
+
+function showAuth() {
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display  = 'none';
+}
+function showApp() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display  = 'block';
+  document.getElementById('accountEmail').textContent = currentUser?.email || currentUser?.user_metadata?.full_name || 'Signed in';
+  checkDailyReset();
+  renderList();
+}
+
+// ── DATABASE ──
+async function loadFromDB() {
+  if (!sb || !currentUser) return;
+  setSyncState('syncing', 'Loading…');
+  const { data, error } = await sb
+    .from('pokemon')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: true });
+
+  if (error) { setSyncState('error', 'Load failed'); console.error(error); return; }
+  pokemon = (data || []).map(dbRowToLocal);
+  setSyncState('synced', 'Synced');
+}
+
+async function saveToDB(p) {
+  if (!sb || !currentUser) return;
+  setSyncState('syncing', 'Saving…');
+  const row = localToDbRow(p);
+  const { error } = await sb.from('pokemon').upsert(row, { onConflict: 'id' });
+  if (error) { setSyncState('error', 'Save failed'); console.error(error); }
+  else setSyncState('synced', 'Synced');
+}
+
+async function deleteFromDB(id) {
+  if (!sb || !currentUser) return;
+  const { error } = await sb.from('pokemon').delete().eq('id', id).eq('user_id', currentUser.id);
+  if (error) console.error(error);
+}
+
+function localToDbRow(p) {
+  return {
+    id:           p.id,
+    user_id:      currentUser.id,
+    name:         p.name,
+    emoji:        p.emoji,
+    level:        p.level,
+    km:           p.km,
+    hearts:       p.hearts,
+    candy:        p.candy,
+    xl:           p.xl,
+    today_hearts: p.todayHearts,
+    last_day:     p.lastDay,
+  };
+}
+function dbRowToLocal(row) {
+  return {
+    id:          row.id,
+    name:        row.name,
+    emoji:       row.emoji,
+    level:       row.level,
+    km:          row.km,
+    hearts:      row.hearts,
+    candy:       row.candy,
+    xl:          row.xl,
+    todayHearts: row.today_hearts,
+    lastDay:     row.last_day,
+  };
+}
+
+function setSyncState(state, label) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+// ── DAILY RESET ──
 function checkDailyReset() {
   const today = new Date().toDateString();
-  pokemon.forEach(p => { if (p.lastDay !== today) { p.todayHearts = 0; p.lastDay = today; } });
-  save();
+  let changed = false;
+  pokemon.forEach(p => {
+    if (p.lastDay !== today) {
+      p.todayHearts = 0;
+      p.lastDay = today;
+      changed = true;
+    }
+  });
+  if (changed) pokemon.forEach(p => saveToDB(p));
 }
 
+// ── HELPERS ──
 function autoLevel(p) {
-  let lvl = 'Good Buddy';
-  if (p.hearts >= 300) lvl = 'Best Buddy';
-  else if (p.hearts >= 70) lvl = 'Ultra Buddy';
-  else if (p.hearts >= 10) lvl = 'Great Buddy';
-  p.level = lvl;
+  if (p.hearts >= 300)     p.level = 'Best Buddy';
+  else if (p.hearts >= 70) p.level = 'Ultra Buddy';
+  else if (p.hearts >= 10) p.level = 'Great Buddy';
+  else                     p.level = 'Good Buddy';
 }
-
 function progressPct(p) {
-  const h = Math.min(p.hearts / HEART_MAX, 1) * 60;
-  const c = Math.min(p.candy / 400, 1) * 20;
-  const x = Math.min(p.xl / XL_MAX, 1) * 20;
-  return Math.round(h + c + x);
+  return Math.round(
+    Math.min(p.hearts / HEART_MAX, 1) * 60 +
+    Math.min(p.candy  / 400,       1) * 20 +
+    Math.min(p.xl     / XL_MAX,    1) * 20
+  );
 }
-
 function levelClass(lvl) { return 'lvl-' + lvl.split(' ')[0].toLowerCase(); }
-
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function uid() { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 // ── RENDER ──
 function renderList() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const q    = document.getElementById('searchInput').value.trim().toLowerCase();
   const sort = document.getElementById('sortSelect').value;
 
   let list = pokemon.filter(p => {
@@ -470,10 +929,10 @@ function renderList() {
   });
 
   list.sort((a, b) => {
-    if (sort === 'name') return a.name.localeCompare(b.name);
-    if (sort === 'level') return LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level);
-    if (sort === 'level-desc') return LEVEL_ORDER.indexOf(b.level) - LEVEL_ORDER.indexOf(a.level);
-    if (sort === 'hearts-desc') return b.hearts - a.hearts;
+    if (sort === 'name')          return a.name.localeCompare(b.name);
+    if (sort === 'level')         return LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level);
+    if (sort === 'level-desc')    return LEVEL_ORDER.indexOf(b.level) - LEVEL_ORDER.indexOf(a.level);
+    if (sort === 'hearts-desc')   return b.hearts - a.hearts;
     if (sort === 'progress-desc') return progressPct(b) - progressPct(a);
     return 0;
   });
@@ -481,29 +940,26 @@ function renderList() {
   const wrap = document.getElementById('listWrap');
   if (list.length === 0) {
     wrap.innerHTML = pokemon.length === 0
-      ? `<div class="empty"><div class="e-emoji">🥚</div><h3>No Pokémon yet</h3><p>Tap "Add Pokémon" to start tracking your buddies toward Best Buddy.</p></div>`
+      ? `<div class="empty"><div class="e-emoji">🥚</div><h3>No Pokémon yet</h3><p>Tap "Add" to start tracking your buddies toward Best Buddy.</p></div>`
       : `<div class="empty"><div class="e-emoji">🔍</div><h3>No matches</h3><p>Try a different search or filter.</p></div>`;
     return;
   }
 
-  wrap.innerHTML = `<div class="count-badge">${list.length} Pokémon</div>` + list.map((p,i) => cardHTML(p,i)).join('');
+  wrap.innerHTML = `<div class="count-badge">${list.length} Pokémon</div>` +
+    list.map((p, i) => cardHTML(p, i)).join('');
 }
 
 function cardHTML(p, i) {
-  const lc = levelClass(p.level);
+  const lc   = levelClass(p.level);
   const hPct = (Math.min(p.hearts, HEART_MAX) / HEART_MAX * 100).toFixed(1);
-  const cPct = (Math.min(p.candy, 400) / 400 * 100).toFixed(1);
-  const xPct = (Math.min(p.xl, XL_MAX) / XL_MAX * 100).toFixed(1);
-
+  const cPct = (Math.min(p.candy,  400)        / 400        * 100).toFixed(1);
+  const xPct = (Math.min(p.xl,     XL_MAX)     / XL_MAX     * 100).toFixed(1);
   const pips = Array.from({length:6}, (_,j) =>
     `<span class="heart-pip ${j < p.todayHearts ? 'on' : ''}" onclick="tapHeart('${p.id}',${j+1})">❤️</span>`
   ).join('');
 
-  const lvlShort = p.level.replace(' Buddy','');
-  const pct = progressPct(p);
-
   return `
-<div class="pokemon-card ${lc}" style="animation-delay:${Math.min(i,8)*0.04}s">
+<div class="pokemon-card ${lc}" style="animation-delay:${Math.min(i,8)*.04}s">
   <div class="card-inner">
     <div class="level-bar"></div>
     <div class="card-body">
@@ -511,20 +967,18 @@ function cardHTML(p, i) {
         <div class="c-avatar">${p.emoji || '❓'}</div>
         <div class="c-name-wrap">
           <div class="c-name">${esc(p.name)}</div>
-          <div class="c-sub">${p.km} km/candy &middot; ${pct}% to Best Buddy</div>
+          <div class="c-sub">${p.km} km/candy · ${progressPct(p)}% to Best Buddy</div>
         </div>
-        <span class="level-badge">${lvlShort}</span>
-        <button class="btn-edit" onclick="openEdit('${p.id}')" title="Edit">
+        <span class="level-badge">${p.level.replace(' Buddy','')}</span>
+        <button class="btn-edit" onclick="openEdit('${p.id}')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
       </div>
-
       <div class="hearts-row">
         <span class="hearts-label">Today</span>
         ${pips}
         <span class="hearts-total"><strong>${p.hearts}</strong> / ${HEART_MAX} hearts</span>
       </div>
-
       <div class="prog-rows">
         <div class="prog-row">
           <span class="prog-icon">❤️</span>
@@ -542,7 +996,6 @@ function cardHTML(p, i) {
           <span class="prog-val">${p.xl} / ${XL_MAX} XL</span>
         </div>
       </div>
-
       <div class="quick-tap">
         <button class="tap-btn" onclick="quickTap('${p.id}','heart')"><span class="t-icon">❤️</span>+Heart</button>
         <button class="tap-btn" onclick="quickTap('${p.id}','candy')"><span class="t-icon">🍬</span>+Candy</button>
@@ -559,7 +1012,7 @@ function tapHeart(id, n) {
   const p = pokemon.find(x => x.id === id);
   if (!p) return;
   p.todayHearts = p.todayHearts === n ? n - 1 : n;
-  save(); renderList();
+  renderList(); saveToDB(p);
 }
 
 function quickTap(id, type) {
@@ -570,16 +1023,16 @@ function quickTap(id, type) {
     if (p.hearts < HEART_MAX) {
       p.hearts++; p.todayHearts = Math.min(p.todayHearts + 1, 6);
       autoLevel(p); msg = '❤️ Heart added';
-    } else { msg = '❤️ Already at max!'; }
+    } else msg = '❤️ Already at max!';
   } else if (type === 'candy') {
     p.candy++; msg = '🍬 Candy +1';
   } else if (type === 'xl') {
     if (p.xl < XL_MAX) { p.xl++; msg = '🍭 XL Candy +1'; }
-    else { msg = '🍭 XL already maxed!'; }
+    else msg = '🍭 XL maxed!';
   } else if (type === 'walk') {
     msg = '🥾 Walk logged';
   }
-  save(); renderList(); showToast(msg);
+  renderList(); saveToDB(p); showToast(msg);
 }
 
 function setFilter(val, el) {
@@ -594,7 +1047,6 @@ function openAdd() {
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Add Pokémon';
   ['fName','fEmoji','fHearts','fCandy','fXL','fTodayHearts'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('fLevel').value = 'Good Buddy';
   document.getElementById('fKm').value = '3';
   document.getElementById('modalActions').innerHTML = `
     <button class="btn-secondary" onclick="closeModal()">Cancel</button>
@@ -608,13 +1060,12 @@ function openEdit(id) {
   if (!p) return;
   editingId = id;
   document.getElementById('modalTitle').textContent = 'Edit ' + p.name;
-  document.getElementById('fName').value = p.name;
-  document.getElementById('fEmoji').value = p.emoji;
-  document.getElementById('fLevel').value = p.level;
-  document.getElementById('fKm').value = p.km;
-  document.getElementById('fHearts').value = p.hearts;
-  document.getElementById('fCandy').value = p.candy;
-  document.getElementById('fXL').value = p.xl;
+  document.getElementById('fName').value        = p.name;
+  document.getElementById('fEmoji').value       = p.emoji;
+  document.getElementById('fKm').value          = p.km;
+  document.getElementById('fHearts').value      = p.hearts;
+  document.getElementById('fCandy').value       = p.candy;
+  document.getElementById('fXL').value          = p.xl;
   document.getElementById('fTodayHearts').value = p.todayHearts;
   document.getElementById('modalActions').innerHTML = `
     <button class="btn-danger" onclick="deletePokemon('${id}')">Remove</button>
@@ -623,59 +1074,65 @@ function openEdit(id) {
   document.getElementById('overlay').classList.add('open');
 }
 
-function saveModal() {
+async function saveModal() {
   const name = document.getElementById('fName').value.trim();
   if (!name) { document.getElementById('fName').focus(); return; }
   const hearts = Math.min(Math.max(parseInt(document.getElementById('fHearts').value) || 0, 0), HEART_MAX);
-  const data = {
-    name, emoji: document.getElementById('fEmoji').value.trim() || '❓',
-    level: document.getElementById('fLevel').value,
-    km: parseInt(document.getElementById('fKm').value),
+  const newData = {
+    name,
+    emoji:       document.getElementById('fEmoji').value.trim() || '❓',
+    km:          parseInt(document.getElementById('fKm').value),
     hearts,
-    candy: Math.max(parseInt(document.getElementById('fCandy').value) || 0, 0),
-    xl: Math.min(Math.max(parseInt(document.getElementById('fXL').value) || 0, 0), XL_MAX),
+    candy:       Math.max(parseInt(document.getElementById('fCandy').value) || 0, 0),
+    xl:          Math.min(Math.max(parseInt(document.getElementById('fXL').value) || 0, 0), XL_MAX),
     todayHearts: Math.min(Math.max(parseInt(document.getElementById('fTodayHearts').value) || 0, 0), 6),
-    lastDay: new Date().toDateString()
+    lastDay:     new Date().toDateString(),
   };
-  // auto-set level from hearts
-  if (data.hearts >= 300) data.level = 'Best Buddy';
-  else if (data.hearts >= 70) data.level = 'Ultra Buddy';
-  else if (data.hearts >= 10) data.level = 'Great Buddy';
-  else data.level = 'Good Buddy';
+  // derive level from hearts
+  if (newData.hearts >= 300)     newData.level = 'Best Buddy';
+  else if (newData.hearts >= 70) newData.level = 'Ultra Buddy';
+  else if (newData.hearts >= 10) newData.level = 'Great Buddy';
+  else                           newData.level = 'Good Buddy';
 
+  let p;
   if (editingId) {
     const idx = pokemon.findIndex(x => x.id === editingId);
-    if (idx !== -1) pokemon[idx] = { ...pokemon[idx], ...data };
+    if (idx !== -1) { pokemon[idx] = { ...pokemon[idx], ...newData }; p = pokemon[idx]; }
     showToast('✅ ' + name + ' updated');
   } else {
-    pokemon.push({ id: uid(), ...data });
+    p = { id: uid(), ...newData };
+    pokemon.push(p);
     showToast('✅ ' + name + ' added!');
   }
-  save(); closeModal(); renderList();
+  closeModal(); renderList();
+  await saveToDB(p);
 }
 
-function deletePokemon(id) {
+async function deletePokemon(id) {
   const p = pokemon.find(x => x.id === id);
   if (!p || !confirm('Remove ' + p.name + ' from tracker?')) return;
   pokemon = pokemon.filter(x => x.id !== id);
-  save(); closeModal(); renderList();
+  closeModal(); renderList();
+  await deleteFromDB(id);
   showToast('🗑️ ' + p.name + ' removed');
 }
 
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
 function closeOnBg(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 
+// ── ACCOUNT MODAL ──
+function openAccount()     { document.getElementById('accountOverlay').classList.add('open'); }
+function closeAccountModal() { document.getElementById('accountOverlay').classList.remove('open'); }
+function closeAccountOnBg(e) { if (e.target === document.getElementById('accountOverlay')) closeAccountModal(); }
+
+// ── TOAST ──
 let toastTimer;
 function showToast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
+  el.textContent = msg; el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
 }
-
-checkDailyReset();
-renderList();
 </script>
 </body>
 </html>
