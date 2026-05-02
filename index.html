@@ -725,6 +725,17 @@ let syncTimeout = null;
 
 // ── AUTH STATE ──
 if (sb) {
+  // First check for an existing session in storage
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) {
+      currentUser = session.user;
+      loadFromDB().then(() => showApp());
+    } else {
+      showAuth();
+    }
+  });
+
+  // Then keep listening for changes (login, logout, token refresh)
   sb.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       currentUser = session.user;
@@ -737,10 +748,9 @@ if (sb) {
     }
   });
 } else {
-  // No config — show auth screen with a disabled state
   showAuth();
 }
-
+  
 // ── AUTH UI ──
 function switchTab(tab) {
   document.querySelectorAll('.auth-tab').forEach((t,i) =>
